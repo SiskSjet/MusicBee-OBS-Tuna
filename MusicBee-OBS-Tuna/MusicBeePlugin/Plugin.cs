@@ -1,34 +1,84 @@
-using System;
+﻿using System;
 using System.Runtime.InteropServices;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Collections.Generic;
+using Sisk.MusicBee.OBS.Tuna;
+using System.IO;
+using System.Reflection;
+using System.Runtime;
+using System.Threading.Tasks;
+using System.Text.Json;
 
 namespace MusicBeePlugin {
 
     public partial class Plugin {
         private PluginInfo _about = new PluginInfo();
-        private MusicBeeApiInterface _mbApiInterface;
+        private MusicBeeApiInterface _api;
+        private string _settingsFile = "settings.xml";
+        private string _tmpHost;
+        private int _tmpPort;
+        private TunaDataSender _tuna;
 
         // MusicBee is closing the plugin (plugin is being disabled by user or MusicBee is shutting down)
-        public void Close(PluginCloseReason reason) { }
+        public void Close(PluginCloseReason reason) {
+            _tuna = null;
+        }
 
         public bool Configure(IntPtr panelHandle) {
             // save any persistent settings in a sub-folder of this path
-            var dataPath = _mbApiInterface.Setting_GetPersistentStoragePath();
+            var dataPath = _api.Setting_GetPersistentStoragePath();
             // panelHandle will only be set if you set about.ConfigurationPanelHeight to a non-zero value
             // keep in mind the panel width is scaled according to the font the user has selected
             // if about.ConfigurationPanelHeight is set to 0, you can display your own popup window
             if (panelHandle != IntPtr.Zero) {
-                var configPanel = (Panel)Panel.FromHandle(panelHandle);
-                var prompt = new Label();
-                prompt.AutoSize = true;
-                prompt.Location = new Point(0, 0);
-                prompt.Text = "prompt:";
-                var textBox = new TextBox();
-                textBox.Bounds = new Rectangle(60, 0, 100, textBox.Height);
-                configPanel.Controls.AddRange(new Control[] { prompt, textBox });
+                var configPanel = (Panel)Control.FromHandle(panelHandle);
+                configPanel.Controls.Clear();
+                var hostLabel = new Label {
+                    Text = "Host",
+                    AutoSize = true,
+                    Location = new Point(0, 0)
+                };
+
+                var hostTextBox = new TextBox {
+                    Text = _tuna.Host,
+                    Bounds = new Rectangle(2, 20, 150, 20)
+                };
+
+                hostTextBox.TextChanged += (sender, e) => {
+                    _tmpHost = hostTextBox.Text;
+                    if (string.IsNullOrWhiteSpace(_tmpHost)) {
+                        _tmpHost = Settings.DEFAULT_HOST;
+                        hostTextBox.Text = _tmpHost;
+                    }
+                };
+
+                var portLabel = new Label {
+                    Text = "Port",
+                    AutoSize = true,
+                    Location = new Point(160, 0)
+                };
+
+                var portTextBox = new TextBox {
+                    Text = _tuna.Port.ToString(),
+                    Bounds = new Rectangle(162, 20, 100, 20)
+                };
+
+                portTextBox.TextChanged += (sender, e) => {
+                    var port = 0;
+                    if (int.TryParse(portTextBox.Text, out port)) {
+                        _tmpPort = port;
+                    }
+
+                    if (_tmpPort < 1) {
+                        _tmpPort = Settings.DEFAULT_PORT;
+                        portTextBox.Text = _tmpPort.ToString();
+                    }
+                };
+
+                configPanel.Controls.AddRange(new Control[] { hostLabel, hostTextBox, portLabel, portTextBox });
             }
+
             return false;
         }
 
@@ -42,6 +92,7 @@ namespace MusicBeePlugin {
 
             _api = new MusicBeeApiInterface();
             _api.Initialise(apiInterfacePtr);
+            _about.PluginInfoVersion = PLUGIN_INFO_VERSION;
             _about.Name = name;
             _about.Description = description;
             _about.Author = company;
@@ -50,10 +101,14 @@ namespace MusicBeePlugin {
             _about.VersionMajor = (short)version.Major;  // your plugin version
             _about.VersionMinor = (short)version.Minor;
             _about.Revision = (short)version.Revision;
-            _about.MinInterfaceVersion = MinInterfaceVersion;
-            _about.MinApiRevision = MinApiRevision;
+            _about.MinInterfaceVersion = MIN_INTERFACE_VERSION;
+            _about.MinApiRevision = MIN_API_REVISION;
             _about.ReceiveNotifications = (ReceiveNotificationFlags.PlayerEvents);
-            _about.ConfigurationPanelHeight = 0;   // height in pixels that musicbee should reserve in a panel for config settings. When set, a handle to an empty panel will be passed to the Configure function
+            _about.ConfigurationPanelHeight = 60;   // height in pixels that musicbee should reserve in a panel for config settings. When set, a handle to an empty panel will be passed to the Configure function
+
+            _settingsFile = Path.Combine(_api.Setting_GetPersistentStoragePath(), $"{assemblyName.Name}.xml");
+            _tuna = new TunaDataSender(_settingsFile);
+            _tuna.LoadSettings();
 
             return _about;
         }
@@ -65,89 +120,63 @@ namespace MusicBeePlugin {
             switch (type) {
                 case NotificationType.PluginStartup:
                     // perform startup initialisation
-                    switch (_mbApiInterface.Player_GetPlayState()) {
+                    switch (_api.Player_GetPlayState()) {
                         case PlayState.Playing:
                         case PlayState.Paused:
+                        case PlayState.Stopped:
                             // ...
+                            // send song data to OBS-Tuna
+                            SendSongDataToTuna();
+
                             break;
                     }
                     break;
 
+                case NotificationType.PlayStateChanged:
                 case NotificationType.TrackChanged:
-                    var artist = _mbApiInterface.NowPlaying_GetFileTag(MetaDataType.Artist);
+                    var artist = _api.NowPlaying_GetFileTag(MetaDataType.Artist);
                     // ...
+                    // send song data to OBS-Tuna
+                    SendSongDataToTuna();
+
                     break;
             }
         }
 
-        // called by MusicBee when the user clicks Apply or Save in the MusicBee Preferences screen.
-        // its up to you to figure out whether anything has changed and needs updating
         public void SaveSettings() {
-            // save any persistent settings in a sub-folder of this path
-            var dataPath = _mbApiInterface.Setting_GetPersistentStoragePath();
+            _tuna?.SaveSettings(_tmpHost, _tmpPort);
         }
 
-        // uninstall this plugin - clean up any persisted files
         public void Uninstall() {
+            _tuna = null;
         }
 
-        // return an array of lyric or artwork provider names this plugin supports
-        // the providers will be iterated through one by one and passed to the RetrieveLyrics/ RetrieveArtwork function in order set by the user in the MusicBee Tags(2) preferences screen until a match is found
-        //public string[] GetProviders()
-        //{
-        //    return null;
-        //}
+        private int SecondsToMilliseconds(int seconds) {
+            return seconds * 1000;
+        }
 
-        // return lyrics for the requested artist/title from the requested provider
-        // only required if PluginType = LyricsRetrieval
-        // return null if no lyrics are found
-        //public string RetrieveLyrics(string sourceFileUrl, string artist, string trackTitle, string album, bool synchronisedPreferred, string provider)
-        //{
-        //    return null;
-        //}
+        private void SendSongDataToTuna() {
+            var state = _api.Player_GetPlayState();
+            var position = SecondsToMilliseconds(_api.Player_GetPosition());
+            var duration = SecondsToMilliseconds(_api.NowPlaying_GetDuration());
+            var cover = _api.NowPlaying_GetArtwork();
+            var tags = new MetaDataType[] { MetaDataType.TrackTitle, MetaDataType.Album, MetaDataType.AlbumArtist, MetaDataType.Artists, MetaDataType.Custom1, MetaDataType.Custom2, MetaDataType.Custom4 };
+            string[] trackData;
+            _api.NowPlaying_GetFileTags(tags, out trackData);
 
-        // return Base64 string representation of the artwork binary data from the requested provider
-        // only required if PluginType = ArtworkRetrieval
-        // return null if no artwork is found
-        //public string RetrieveArtwork(string sourceFileUrl, string albumArtist, string album, string provider)
-        //{
-        //    //Return Convert.ToBase64String(artworkBinaryData)
-        //    return null;
-        //}
+            var songdata = new SongData() {
+                Title = trackData[0],
+                Album = trackData[1],
+                AlbumArtist = trackData[2],
+                Artists = trackData[3].Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries),
+                Copyright = trackData[4],
+                Url = trackData[5],
+                Status = state.ToString(),
+                Progress = position,
+                Cover = cover,
+            };
 
-        //  presence of this function indicates to MusicBee that this plugin has a dockable panel. MusicBee will create the control and pass it as the panel parameter
-        //  you can add your own controls to the panel if needed
-        //  you can control the scrollable area of the panel using the mbApiInterface.MB_SetPanelScrollableArea function
-        //  to set a MusicBee header for the panel, set about.TargetApplication in the Initialise function above to the panel header text
-        //public int OnDockablePanelCreated(Control panel)
-        //{
-        //  //    return the height of the panel and perform any initialisation here
-        //  //    MusicBee will call panel.Dispose() when the user removes this panel from the layout configuration
-        //  //    < 0 indicates to MusicBee this control is resizable and should be sized to fill the panel it is docked to in MusicBee
-        //  //    = 0 indicates to MusicBee this control resizeable
-        //  //    > 0 indicates to MusicBee the fixed height for the control.Note it is recommended you scale the height for high DPI screens(create a graphics object and get the DpiY value)
-        //    float dpiScaling = 0;
-        //    using (Graphics g = panel.CreateGraphics())
-        //    {
-        //        dpiScaling = g.DpiY / 96f;
-        //    }
-        //    panel.Paint += panel_Paint;
-        //    return Convert.ToInt32(100 * dpiScaling);
-        //}
-
-        // presence of this function indicates to MusicBee that the dockable panel created above will show menu items when the panel header is clicked
-        // return the list of ToolStripMenuItems that will be displayed
-        //public List<ToolStripItem> GetHeaderMenuItems()
-        //{
-        //    List<ToolStripItem> list = new List<ToolStripItem>();
-        //    list.Add(new ToolStripMenuItem("A menu item"));
-        //    return list;
-        //}
-
-        //private void panel_Paint(object sender, PaintEventArgs e)
-        //{
-        //    e.Graphics.Clear(Color.Red);
-        //    TextRenderer.DrawText(e.Graphics, "hello", SystemFonts.CaptionFont, new Point(10, 10), Color.Blue);
-        //}
+            var unused = Task.Run(() => _tuna.SendSongDataAsync(songdata));
+        }
     }
 }
