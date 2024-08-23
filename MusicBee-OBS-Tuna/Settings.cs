@@ -5,8 +5,11 @@ using System.Xml.Serialization;
 namespace Sisk.MusicBee.OBS.Tuna {
 
     [Serializable]
-    internal class Settings {
+    public class Settings {
+        public const string DEFAULT_HOST = "localhost";
         public const int DEFAULT_PORT = 1608;
+
+        public string Host { get; set; } = DEFAULT_HOST;
         public int Port { get; set; } = DEFAULT_PORT;
 
         public static Settings Load(string file) {
