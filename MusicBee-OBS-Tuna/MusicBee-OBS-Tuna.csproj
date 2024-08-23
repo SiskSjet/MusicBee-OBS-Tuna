@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net48</TargetFramework>
+		<Platforms>x86</Platforms>
+		<LangVersion>6</LangVersion>
+		<RootNamespace>Sisk.MusicBee.OBS.Tuna</RootNamespace>
+		<AssemblyName>mb_$(MSBuildProjectName)</AssemblyName>
+		<Authors>Sisk S'jet</Authors>
+		<Version>0.1.0</Version>
+		<Title>MusicBee OBS-Tuna Plugin</Title>
+		<Product>MusicBee OBS-Tuna Plugin</Product>
+		<Description>OBS-Tuna plugin for MusicBee</Description>
+		<Copyright>2024 © Sisk S'jet</Copyright>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageTags>MusicBee;OBS-Tuna</PackageTags>
+		<NeutralLanguage>en</NeutralLanguage>
+	</PropertyGroup>
+
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
+		<Exec Command="copy /Y &quot;$(TargetPath)&quot; &quot;D:\Tools\MusicBee\Plugins\&quot;" />
+	</Target>
+
+	<ItemGroup>
+	  <None Include="..\README.md">
+	    <Pack>True</Pack>
+	    <PackagePath>\</PackagePath>
+	  </None>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Reference Include="System.Windows.Forms" />
+	</ItemGroup>
+
+</Project>

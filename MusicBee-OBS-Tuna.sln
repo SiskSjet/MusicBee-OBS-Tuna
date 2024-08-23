@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35219.272
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MusicBee-OBS-Tuna", "MusicBee-OBS-Tuna\MusicBee-OBS-Tuna.csproj", "{79ACF514-944B-4FFD-8B5F-2EECDB9E027A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Projektmappenelemente", "Projektmappenelemente", "{8B413D5D-DD3F-40EF-A555-DC063C0226D5}"
+	ProjectSection(SolutionItems) = preProject
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		LICENSE = LICENSE
+		package.json = package.json
+		README.md = README.md
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{79ACF514-944B-4FFD-8B5F-2EECDB9E027A}.Debug|x86.ActiveCfg = Debug|x86
+		{79ACF514-944B-4FFD-8B5F-2EECDB9E027A}.Debug|x86.Build.0 = Debug|x86
+		{79ACF514-944B-4FFD-8B5F-2EECDB9E027A}.Release|x86.ActiveCfg = Release|x86
+		{79ACF514-944B-4FFD-8B5F-2EECDB9E027A}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1881C6B7-48D0-4EAB-9B13-D4284AAC8F78}
+	EndGlobalSection
+EndGlobal

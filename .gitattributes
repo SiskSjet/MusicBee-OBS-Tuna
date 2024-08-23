@@ -1,0 +1,31 @@
+# Auto detect text files and perform LF normalization
+*          text=auto !eol
+
+.vscode/*.json linguist-language=JSON-with-Comments
+
+*.cs       text diff=csharp
+*.cshtml   text diff=html
+*.csx      text diff=csharp
+*.sln      text eol=crlf
+*.csproj   text eol=crlf
+
+# Scripts
+*.bash     text eol=lf
+*.fish     text eol=lf
+*.ksh      text eol=lf
+*.sh       text eol=lf
+*.zsh      text eol=lf
+# These are explicitly windows files and should use crlf
+*.bat      text eol=crlf
+*.cmd      text eol=crlf
+*.ps1      text eol=crlf
+
+# Serialisation
+*.json     text
+*.toml     text
+*.xml      text
+*.yaml     text
+*.yml      text
+
+# Text files where line endings should be preserved
+*.patch    -text
