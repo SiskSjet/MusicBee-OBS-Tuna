@@ -6,11 +6,12 @@
 		<LangVersion>6</LangVersion>
 		<RootNamespace>Sisk.MusicBee.OBS.Tuna</RootNamespace>
 		<AssemblyName>mb_$(MSBuildProjectName)</AssemblyName>
+		<AssemblyTitle>OBS-Tuna</AssemblyTitle>
 		<Authors>Sisk S'jet</Authors>
 		<Version>0.1.0</Version>
-		<Title>MusicBee OBS-Tuna Plugin</Title>
+		<Title>OBS-Tuna Plugin</Title>
 		<Product>MusicBee OBS-Tuna Plugin</Product>
-		<Description>OBS-Tuna plugin for MusicBee</Description>
+		<Description>Send song information to obs-tuna.</Description>
 		<Copyright>2024 © Sisk S'jet</Copyright>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageTags>MusicBee;OBS-Tuna</PackageTags>
@@ -29,6 +30,15 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <PackageReference Include="Costura.Fody" Version="5.7.0">
+	    <PrivateAssets>all</PrivateAssets>
+	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	  </PackageReference>
+	  <PackageReference Include="System.Text.Json" Version="8.0.4" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Reference Include="System.Net.Http" />
 		<Reference Include="System.Windows.Forms" />
 	</ItemGroup>
 
