@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
 using System.Drawing;
 using System.Windows.Forms;
@@ -33,20 +33,26 @@ namespace MusicBeePlugin {
         }
 
         public PluginInfo Initialise(IntPtr apiInterfacePtr) {
-            _mbApiInterface = new MusicBeeApiInterface();
-            _mbApiInterface.Initialise(apiInterfacePtr);
-            _about.PluginInfoVersion = PluginInfoVersion;
-            _about.Name = "OBS-Tuna";
-            _about.Description = "OBS-Tuna plugin for MusicBee";
-            _about.Author = "Sisk S'jet";
+            var assembly = Assembly.GetExecutingAssembly();
+            var assemblyName = assembly.GetName();
+            var name = assembly.GetCustomAttribute<AssemblyTitleAttribute>().Title;
+            var description = assembly.GetCustomAttribute<AssemblyDescriptionAttribute>().Description;
+            var company = assembly.GetCustomAttribute<AssemblyCompanyAttribute>().Company;
+            var version = assemblyName.Version;
+
+            _api = new MusicBeeApiInterface();
+            _api.Initialise(apiInterfacePtr);
+            _about.Name = name;
+            _about.Description = description;
+            _about.Author = company;
             _about.TargetApplication = "";   //  the name of a Plugin Storage device or panel header for a dockable panel
             _about.Type = PluginType.General;
-            _about.VersionMajor = 0;  // your plugin version
-            _about.VersionMinor = 1;
-            _about.Revision = 0;
+            _about.VersionMajor = (short)version.Major;  // your plugin version
+            _about.VersionMinor = (short)version.Minor;
+            _about.Revision = (short)version.Revision;
             _about.MinInterfaceVersion = MinInterfaceVersion;
             _about.MinApiRevision = MinApiRevision;
-            _about.ReceiveNotifications = (ReceiveNotificationFlags.PlayerEvents | ReceiveNotificationFlags.TagEvents);
+            _about.ReceiveNotifications = (ReceiveNotificationFlags.PlayerEvents);
             _about.ConfigurationPanelHeight = 0;   // height in pixels that musicbee should reserve in a panel for config settings. When set, a handle to an empty panel will be passed to the Configure function
 
             return _about;
