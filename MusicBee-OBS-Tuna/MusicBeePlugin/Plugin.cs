@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Runtime.InteropServices;
 using System.Drawing;
 using System.Windows.Forms;
@@ -20,17 +20,11 @@ namespace MusicBeePlugin {
         private int _tmpPort;
         private TunaDataSender _tuna;
 
-        // MusicBee is closing the plugin (plugin is being disabled by user or MusicBee is shutting down)
         public void Close(PluginCloseReason reason) {
             _tuna = null;
         }
 
         public bool Configure(IntPtr panelHandle) {
-            // save any persistent settings in a sub-folder of this path
-            var dataPath = _api.Setting_GetPersistentStoragePath();
-            // panelHandle will only be set if you set about.ConfigurationPanelHeight to a non-zero value
-            // keep in mind the panel width is scaled according to the font the user has selected
-            // if about.ConfigurationPanelHeight is set to 0, you can display your own popup window
             if (panelHandle != IntPtr.Zero) {
                 var configPanel = (Panel)Control.FromHandle(panelHandle);
                 configPanel.Controls.Clear();
@@ -96,15 +90,15 @@ namespace MusicBeePlugin {
             _about.Name = name;
             _about.Description = description;
             _about.Author = company;
-            _about.TargetApplication = "";   //  the name of a Plugin Storage device or panel header for a dockable panel
+            _about.TargetApplication = "";
             _about.Type = PluginType.General;
-            _about.VersionMajor = (short)version.Major;  // your plugin version
+            _about.VersionMajor = (short)version.Major;
             _about.VersionMinor = (short)version.Minor;
             _about.Revision = (short)version.Revision;
             _about.MinInterfaceVersion = MIN_INTERFACE_VERSION;
             _about.MinApiRevision = MIN_API_REVISION;
             _about.ReceiveNotifications = (ReceiveNotificationFlags.PlayerEvents);
-            _about.ConfigurationPanelHeight = 60;   // height in pixels that musicbee should reserve in a panel for config settings. When set, a handle to an empty panel will be passed to the Configure function
+            _about.ConfigurationPanelHeight = 60;
 
             _settingsFile = Path.Combine(_api.Setting_GetPersistentStoragePath(), $"{assemblyName.Name}.xml");
             _tuna = new TunaDataSender(_settingsFile);
@@ -113,10 +107,7 @@ namespace MusicBeePlugin {
             return _about;
         }
 
-        // receive event notifications from MusicBee
-        // you need to set about.ReceiveNotificationFlags = PlayerEvents to receive all notifications, and not just the startup event
         public void ReceiveNotification(string sourceFileUrl, NotificationType type) {
-            // perform some action depending on the notification type
             switch (type) {
                 case NotificationType.PluginStartup:
                     // perform startup initialisation
@@ -124,8 +115,6 @@ namespace MusicBeePlugin {
                         case PlayState.Playing:
                         case PlayState.Paused:
                         case PlayState.Stopped:
-                            // ...
-                            // send song data to OBS-Tuna
                             SendSongDataToTuna();
 
                             break;
@@ -134,9 +123,6 @@ namespace MusicBeePlugin {
 
                 case NotificationType.PlayStateChanged:
                 case NotificationType.TrackChanged:
-                    var artist = _api.NowPlaying_GetFileTag(MetaDataType.Artist);
-                    // ...
-                    // send song data to OBS-Tuna
                     SendSongDataToTuna();
 
                     break;
