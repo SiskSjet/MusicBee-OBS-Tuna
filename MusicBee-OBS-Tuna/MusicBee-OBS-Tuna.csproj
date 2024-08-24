@@ -11,7 +11,7 @@
 		<Version>0.1.0</Version>
 		<Title>OBS-Tuna Plugin</Title>
 		<Product>MusicBee OBS-Tuna Plugin</Product>
-		<Description>Send song information to obs-tuna.</Description>
+		<Description>MusicBee plugin to send song information to obs-tuna.</Description>
 		<Copyright>2024 © Sisk S'jet</Copyright>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageTags>MusicBee;OBS-Tuna</PackageTags>
