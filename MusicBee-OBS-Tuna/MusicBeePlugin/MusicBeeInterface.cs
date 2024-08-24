@@ -5,9 +5,9 @@ using System.Collections.Generic;
 namespace MusicBeePlugin {
 
     public partial class Plugin {
-        public const short MinApiRevision = 53;
-        public const short MinInterfaceVersion = 41;
-        public const short PluginInfoVersion = 1;
+        public const short MIN_API_REVISION = 53;
+        public const short MIN_INTERFACE_VERSION = 41;
+        public const short PLUGIN_INFO_VERSION = 1;
 
         public delegate string Library_AddFileToLibraryDelegate(string sourceFileUrl, LibraryCategory category);
 

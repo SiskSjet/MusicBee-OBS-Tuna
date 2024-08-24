@@ -1,7 +1,7 @@
 {
   "name": "musicbee-obs-tuna",
   "version": "0.1.0",
-  "description": "OBS-Tuna plugin for MusicBee",
+  "description": "MusicBee plugin to send song information to obs-tuna.",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
