@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 using Sisk.MusicBee.OBS.Tuna;
@@ -13,7 +13,6 @@ namespace MusicBeePlugin {
     public partial class Plugin {
         private PluginInfo _about = new PluginInfo();
         private MusicBeeApiInterface _api;
-        private string _settingsFile = "settings.xml";
         private string _tmpHost;
         private int _tmpPort;
         private TunaDataSender _tuna;
@@ -100,8 +99,7 @@ namespace MusicBeePlugin {
             _about.ReceiveNotifications = (ReceiveNotificationFlags.PlayerEvents);
             _about.ConfigurationPanelHeight = 60;
 
-            _settingsFile = Path.Combine(_api.Setting_GetPersistentStoragePath(), $"{assemblyName.Name}.xml");
-            _tuna = new TunaDataSender(_settingsFile);
+            _tuna = new TunaDataSender(Path.Combine(_api.Setting_GetPersistentStoragePath(), name, $"settings.xml"));
             _tuna.LoadSettings();
 
             return _about;

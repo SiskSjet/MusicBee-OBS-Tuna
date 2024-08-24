@@ -24,6 +24,11 @@ namespace Sisk.MusicBee.OBS.Tuna {
         }
 
         public void Save(string file) {
+            var directory = Path.GetDirectoryName(file);
+            if (!string.IsNullOrWhiteSpace(directory) && !Directory.Exists(directory)) {
+                Directory.CreateDirectory(directory);
+            }
+
             using (var writer = new StreamWriter(file)) {
                 var serializer = new XmlSerializer(typeof(Settings));
                 serializer.Serialize(writer, this);
