@@ -21,6 +21,7 @@ namespace MusicBeePlugin {
 
         public void Close(PluginCloseReason reason) {
             _updateTimer?.Stop();
+            _tuna?.Close();
             _tuna = null;
         }
 
