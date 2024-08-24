@@ -1,14 +1,12 @@
-using System;
-using System.Runtime.InteropServices;
+﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
-using System.Collections.Generic;
 using Sisk.MusicBee.OBS.Tuna;
 using System.IO;
 using System.Reflection;
-using System.Runtime;
 using System.Threading.Tasks;
-using System.Text.Json;
+using System.Timers;
+using Timer = System.Timers.Timer;
 
 namespace MusicBeePlugin {
 
@@ -19,8 +17,10 @@ namespace MusicBeePlugin {
         private string _tmpHost;
         private int _tmpPort;
         private TunaDataSender _tuna;
+        private Timer _updateTimer;
 
         public void Close(PluginCloseReason reason) {
+            _updateTimer?.Stop();
             _tuna = null;
         }
 
@@ -110,15 +110,7 @@ namespace MusicBeePlugin {
         public void ReceiveNotification(string sourceFileUrl, NotificationType type) {
             switch (type) {
                 case NotificationType.PluginStartup:
-                    // perform startup initialisation
-                    switch (_api.Player_GetPlayState()) {
-                        case PlayState.Playing:
-                        case PlayState.Paused:
-                        case PlayState.Stopped:
-                            SendSongDataToTuna();
-
-                            break;
-                    }
+                    SetupTimer();
                     break;
 
                 case NotificationType.PlayStateChanged:
@@ -143,12 +135,34 @@ namespace MusicBeePlugin {
 
         private void SendSongDataToTuna() {
             var state = _api.Player_GetPlayState();
-            var position = SecondsToMilliseconds(_api.Player_GetPosition());
-            var duration = SecondsToMilliseconds(_api.NowPlaying_GetDuration());
+            var position = _api.Player_GetPosition();
+            var duration = _api.NowPlaying_GetDuration();
             var cover = _api.NowPlaying_GetArtwork();
             var tags = new MetaDataType[] { MetaDataType.TrackTitle, MetaDataType.Album, MetaDataType.AlbumArtist, MetaDataType.Artists, MetaDataType.Custom1, MetaDataType.Custom2, MetaDataType.Custom4 };
             string[] trackData;
             _api.NowPlaying_GetFileTags(tags, out trackData);
+
+            var playState = "";
+            switch (state) {
+                case PlayState.Playing:
+                    playState = "playing";
+                    _updateTimer?.Start();
+                    break;
+
+                case PlayState.Paused:
+                    playState = "paused";
+                    _updateTimer?.Stop();
+                    break;
+
+                case PlayState.Stopped:
+                    playState = "stopped";
+                    _updateTimer?.Stop();
+                    break;
+
+                default:
+                    playState = "unknown";
+                    break;
+            }
 
             var songdata = new SongData() {
                 Title = trackData[0],
@@ -157,12 +171,24 @@ namespace MusicBeePlugin {
                 Artists = trackData[3].Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries),
                 Copyright = trackData[4],
                 Url = trackData[5],
-                Status = state.ToString(),
+                Status = playState,
                 Progress = position,
-                Cover = cover,
+                Duration = duration,
+                //Cover = cover,
             };
 
             var unused = Task.Run(() => _tuna.SendSongDataAsync(songdata));
+        }
+
+        private void SetupTimer() {
+            _updateTimer = new Timer(500);
+            _updateTimer.Elapsed += UpdateTimerElapsedCallback;
+            _updateTimer.AutoReset = true;
+            _updateTimer.Stop();
+        }
+
+        private void UpdateTimerElapsedCallback(object sender, ElapsedEventArgs e) {
+            SendSongDataToTuna();
         }
     }
 }
