@@ -1,6 +1,5 @@
-﻿using System;
+﻿namespace Sisk.MusicBee.OBS.Tuna {
 
-namespace Sisk.MusicBee.OBS.Tuna {
     public class SongData {
         public string Album;
         public string AlbumArtist;
@@ -16,13 +15,10 @@ namespace Sisk.MusicBee.OBS.Tuna {
         public string Genre;
         public string Label;
         public string Lyrics;
-        public DateTime PlaybackDate;
-        public string PlaybackTime;
         public int Progress;
         public string Rating;
         public string Status;
         public string Title;
-        public string TrackId;
         public int TrackNumber;
         public string Url;
     }
