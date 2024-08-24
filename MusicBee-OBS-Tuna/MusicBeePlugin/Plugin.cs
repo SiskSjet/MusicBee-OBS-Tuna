@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
 using Sisk.MusicBee.OBS.Tuna;
@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Timers;
 using Timer = System.Timers.Timer;
+using System.Linq;
 
 namespace MusicBeePlugin {
 
@@ -135,7 +136,7 @@ namespace MusicBeePlugin {
             var state = _api.Player_GetPlayState();
             var position = _api.Player_GetPosition();
             var duration = _api.NowPlaying_GetDuration();
-            var cover = _api.NowPlaying_GetArtwork();
+            var coverBase64 = _api.NowPlaying_GetArtwork();
             var tags = new MetaDataType[] { MetaDataType.TrackTitle, MetaDataType.Album, MetaDataType.AlbumArtist, MetaDataType.Artists, MetaDataType.Custom1, MetaDataType.Custom2, MetaDataType.Custom4 };
             string[] trackData;
             _api.NowPlaying_GetFileTags(tags, out trackData);
@@ -166,14 +167,17 @@ namespace MusicBeePlugin {
                 Title = trackData[0],
                 Album = trackData[1],
                 AlbumArtist = trackData[2],
-                Artists = trackData[3].Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries),
+                Artists = trackData[3].Split(';').Select(artist => artist.Trim()).ToArray(),
                 Copyright = trackData[4],
                 Url = trackData[5],
                 Status = playState,
                 Progress = position,
                 Duration = duration,
-                //Cover = cover,
             };
+
+            if (!string.IsNullOrWhiteSpace(coverBase64)) {
+                songdata.CoverBase64 = $"data:image/jpeg;base64,{coverBase64}";
+            }
 
             var unused = Task.Run(() => _tuna.SendSongDataAsync(songdata));
         }
