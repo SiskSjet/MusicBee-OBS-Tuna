@@ -6,7 +6,7 @@
         public string[] Artists;
         public string Copyright;
         public string Cover;
-        public string CoverUrl;
+        public string CoverBase64;
         public int DiscNumber;
         public int DiscTotal;
         public int Duration;
