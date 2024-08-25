@@ -1,5 +1,7 @@
 # MusicBee OBS-Tuna Plugin
 
+<img src="logo.png" width="256">
+
 [MusicBee](https://getmusicbee.com/) plugin to send song information to [obs-tuna](https://github.com/univrsal/tuna).
 
 ## Installation
