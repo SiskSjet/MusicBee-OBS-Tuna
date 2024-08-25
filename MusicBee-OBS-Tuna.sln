@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35219.272
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MusicBee-OBS-Tuna", "MusicBee-OBS-Tuna\MusicBee-OBS-Tuna.csproj", "{79ACF514-944B-4FFD-8B5F-2EECDB9E027A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MusicBee-OBS-Tuna", "MusicBee-OBS-Tuna\MusicBee-OBS-Tuna.csproj", "{79ACF514-944B-4FFD-8B5F-2EECDB9E027A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Projektmappenelemente", "Projektmappenelemente", "{8B413D5D-DD3F-40EF-A555-DC063C0226D5}"
 	ProjectSection(SolutionItems) = preProject

@@ -1,11 +1,22 @@
 {
   "name": "musicbee-obs-tuna",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "MusicBee plugin to send song information to obs-tuna.",
   "scripts": {
+    "release": "semantic-release",
+    "prebuild": "dotnet restore --locked-mode",
+    "build": "dotnet build --configuration Release",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "Sisk S'jet",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SiskSjet/MusicBee-OBS-Tuna"
+  },
+  "devDependencies": {
+    "semantic-release": "^24.1.0",
+    "semantic-release-gitmoji": "^1.6.8"
+  }
 }
