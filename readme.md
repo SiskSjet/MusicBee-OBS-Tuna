@@ -8,6 +8,7 @@
 
 1. Download `mb_MusicBee-OBS-Tuna.dll ` from the [releases page](https://github.com/SiskSjet/MusicBee-OBS-Tuna/releases/latest)
 2. Copy `mb_MusicBee-OBS-Tuna.dll` to your MusicBee Plugins directory (usually `C:\Program Files (x86)\MusicBee\Plugins`)
+3. In OBS-Tuna, select Web browser as music source.
 
 ## Configuration
 
